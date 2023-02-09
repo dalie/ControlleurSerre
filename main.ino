@@ -39,6 +39,7 @@ int air = 4;//Socket circulateur air
 int delayTime = 5000;
 int delayDebut = 10000;
 int delayData = 15000;
+bool isWriting = false;
 
 
 int condEntAir = 26;
@@ -50,8 +51,6 @@ int condAir = 50;
 int airDebut = 5;//heure de début du circulateur d'air
 int airFin = 22; //heure de fin du circulateur d'air
 int airMin = 50; //nombre de minutes à l'heure du circulateur d'air
-
-int j=0;//variable utilisée pour décompte
 
 //Déclaration de variables boolean permettant de voir si les systèmes sont actifs
 bool sys1;//entrée air fonctionnelle ?
@@ -291,27 +290,31 @@ void loop() {
   delay(delayTime);
 
   //Partie du code servant à transmettre les données de la serre sur une carte microSD
-  dataSerre = SD.open("data.txt", FILE_WRITE);
-  if (((mm-j>=15)or((j-mm>=30)and(j-mm<=45)))and(dataSerre)) {    
-  dataSerre.print(rtc.getDateStr());
-  dataSerre.print(",");  
-  dataSerre.print(rtc.getTimeStr());
-  dataSerre.print(",");    
-  dataSerre.print(TMoy);
-  dataSerre.print(",");
-  dataSerre.print(Geo1);
-  dataSerre.print(",");
-  dataSerre.print(Geo2);  
-  dataSerre.close();// close the file
-  j=mm;
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Transcription data");
-  lcd.setCursor(0,1);
-  lcd.print("en cours");
-  delay(delayData);
+  //Transmet sur la carte une fois au 15 minutes
+  if (mm == 0 or mm == 15 or mm == 30 or mm == 45) {
+    if(!isWriting){
+      dataSerre = SD.open("data.txt", FILE_WRITE);
+      if(dataSerre){
+        dataSerre.print(rtc.getDateStr());
+        dataSerre.print(",");  
+        dataSerre.print(rtc.getTimeStr());
+        dataSerre.print(",");    
+        dataSerre.print(TMoy);
+        dataSerre.print(",");
+        dataSerre.print(Geo1);
+        dataSerre.print(",");
+        dataSerre.print(Geo2);  
+        dataSerre.close();// close the file
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Transcription data");
+        lcd.setCursor(0,1);
+        lcd.print("en cours");
+        isWriting = true;
+        delay(delayData);
+      }
+    }
+  } else if(isWriting){
+    isWriting = false;
   }
-
-
-
 }
